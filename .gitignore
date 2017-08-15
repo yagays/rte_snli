@@ -1,5 +1,7 @@
 data/*
 !.gitkeep
+log
+model
 
 ### https://raw.github.com/github/gitignore/e7caac93b897f3baa29b5408a11971205accd9a5/Global/osx.gitignore
 

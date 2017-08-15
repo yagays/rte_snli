@@ -112,6 +112,7 @@ def load_data(train_sampling=False):
     if train_sampling:
         X_train[0] = X_train[0][:10000]
         X_train[1] = X_train[1][:10000]
+        y_train = y_train[:10000]
 
     return X_train, y_train, X_dev, y_dev, X_test, y_test, tokenizer
 

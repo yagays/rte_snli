@@ -4,6 +4,7 @@
 import os
 import json
 import argparse
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
@@ -42,15 +43,23 @@ nb_epochs = opt.nb_epochs
 lstm_dim = opt.lstm_dim
 embedding_dim = opt.embedding_dim
 
+dt_str = datetime.now().strftime("%Y%m%d")
+ut_str = datetime.now().strftime("%s")
 exp_file_name = os.path.splitext(os.path.basename(__file__))[0]
-exp_stamp = exp_file_name + "__{}_{}_{}_{}".format(batch_size,
-                                                   nb_epochs,
-                                                   lstm_dim,
-                                                   embedding_dim)
-model_dir = opt.model_dir
+exp_stamp = "{}.{}.{}_{}_{}_{}".format(ut_str,
+                                       exp_file_name,
+                                       batch_size,
+                                       nb_epochs,
+                                       lstm_dim,
+                                       embedding_dim)
+
+model_dir = os.path.join(opt.model_dir, dt_str)
+if not os.path.isdir(model_dir):
+    print(model_dir)
+    os.mkdir(model_dir)
 model_name = os.path.join(model_dir, exp_stamp + ".model.json")
 model_weights_name = os.path.join(model_dir, exp_stamp + ".weight.h5")
-output_name = os.path.join(model_dir, exp_stamp + ".output.json")
+model_metrics_name = os.path.join(model_dir, exp_stamp + ".metrics.json")
 
 # =====data preprocess=====
 X_train, y_train, X_dev, y_dev, X_test, y_test, tokenizer = load_data(train_sampling=opt.train_sampling)
@@ -132,7 +141,7 @@ model.save_weights(model_weights_name)
 with open(model_name, "w") as f:
     f.write(model.to_json())
 
-with open(output_name, "w") as f:
+with open(model_metrics_name, "w") as f:
     json.dump(
         {
             "evaluation": {"test_score": score, "test_accuracy": acc},

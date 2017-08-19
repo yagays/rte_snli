@@ -147,8 +147,8 @@ model.fit(X_train, y_train,
           shuffle=True,
           )
 
-y_pred = model.predict_classes(X_dev, batch_size=batch_size).flatten()
-score, acc = model.evaluate(X_dev, y_dev, batch_size=batch_size)
+y_pred = model.predict_classes(X_test, batch_size=batch_size).flatten()
+score, acc = model.evaluate(X_test, y_test, batch_size=batch_size)
 
 print()
 print("Test score:", score)

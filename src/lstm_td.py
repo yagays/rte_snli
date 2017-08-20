@@ -84,7 +84,7 @@ model1.add(Embedding(num_words + 1,
                      embedding_dim,
                      weights=[embedding_matrix],
                      trainable=False))
-model1.add(LSTM(embedding_dim, recurrent_dropout=0.5, dropout=0.5, return_sequences=True))
+model1.add(LSTM(lstm_dim, recurrent_dropout=0.5, dropout=0.5, return_sequences=True))
 model1.add(TimeDistributed(Dense(100, activation="relu")))
 model1.add(Lambda(lambda x: K.sum(x, axis=1), output_shape=(100,)))
 
@@ -93,7 +93,7 @@ model2.add(Embedding(num_words + 1,
                      embedding_dim,
                      weights=[embedding_matrix],
                      trainable=False))
-model2.add(LSTM(embedding_dim, recurrent_dropout=0.5, dropout=0.5, return_sequences=True))
+model2.add(LSTM(lstm_dim, recurrent_dropout=0.5, dropout=0.5, return_sequences=True))
 model2.add(TimeDistributed(Dense(100, activation="relu")))
 model2.add(Lambda(lambda x: K.sum(x, axis=1), output_shape=(100,)))
 

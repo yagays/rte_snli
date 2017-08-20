@@ -34,6 +34,9 @@ parser.add_argument("--batch_size", type=int, default=512, help="batch size")
 parser.add_argument("--nb_epochs", type=int, default=10, help="numbers of epochs to train for")
 parser.add_argument("--lstm_dim", type=int, default=200, help="LSTM dim.")
 parser.add_argument("--embedding_dim", type=int, default=200, help="embedding dim.")
+parser.add_argument("--translation_dim", type=int, default=100, help="translation dim.")
+parser.add_argument("--mlp_dim", type=int, default=300, help="mlp dim.")
+parser.add_argument("--mlp_dropout", type=int, default=0.5, help="mlp dropout")
 parser.add_argument("--model_dir", default="model/", help="path to model")
 parser.add_argument("--tensorboard_dir", default="log/", help="path to save tensorboard logs")
 arg = parser.parse_args()
@@ -43,17 +46,24 @@ batch_size = arg.batch_size
 nb_epochs = arg.nb_epochs
 lstm_dim = arg.lstm_dim
 embedding_dim = arg.embedding_dim
+translation_dim = arg.translation_dim
+mlp_dim = arg.mlp_dim
+mlp_dropout = arg.mlp_dropout
 tensorboard_log_dir = arg.tensorboard_dir
 
 dt_str = datetime.now().strftime("%Y%m%d")
 ut_str = datetime.now().strftime("%s")
 exp_file_name = os.path.splitext(os.path.basename(__file__))[0]
-exp_stamp = "{}.{}.{}_{}_{}_{}".format(ut_str,
-                                       exp_file_name,
-                                       batch_size,
-                                       nb_epochs,
-                                       lstm_dim,
-                                       embedding_dim)
+exp_stamp = "{}.{}.{}_{}_{}_{}_{}_{}_{}".format(ut_str,
+                                                exp_file_name,
+                                                batch_size,
+                                                nb_epochs,
+                                                lstm_dim,
+                                                embedding_dim,
+                                                translation_dim,
+                                                mlp_dim,
+                                                mlp_dropout
+                                                )
 
 model_dir = os.path.join(arg.model_dir, dt_str)
 if not os.path.isdir(model_dir):
@@ -90,7 +100,7 @@ model1.add(Embedding(num_words + 1,
                      weights=[embedding_matrix],
                      trainable=False))
 model1.add(Bidirectional(LSTM(embedding_dim, recurrent_dropout=0.5, dropout=0.5, return_sequences=True)))
-model1.add(TimeDistributed(Dense(100, activation="relu")))
+model1.add(TimeDistributed(Dense(translation_dim, activation="relu")))
 model1.add(Lambda(lambda x: K.sum(x, axis=1), output_shape=(100,)))
 
 model2 = Sequential()
@@ -99,26 +109,26 @@ model2.add(Embedding(num_words + 1,
                      weights=[embedding_matrix],
                      trainable=False))
 model2.add(Bidirectional(LSTM(embedding_dim, recurrent_dropout=0.5, dropout=0.5, return_sequences=True)))
-model2.add(TimeDistributed(Dense(100, activation="relu")))
+model2.add(TimeDistributed(Dense(translation_dim, activation="relu")))
 model2.add(Lambda(lambda x: K.sum(x, axis=1), output_shape=(100,)))
 
 model = Sequential()
 model.add(Merge([model1, model2], mode="concat"))
 model.add(BatchNormalization())
 
-model.add(Dense(300))
+model.add(Dense(mlp_dim))
 model.add(PReLU())
-model.add(Dropout(0.5))
+model.add(Dropout(mlp_dropout))
 model.add(BatchNormalization())
 
-model.add(Dense(300))
+model.add(Dense(mlp_dim))
 model.add(PReLU())
-model.add(Dropout(0.5))
+model.add(Dropout(mlp_dropout))
 model.add(BatchNormalization())
 
-model.add(Dense(300))
+model.add(Dense(mlp_dim))
 model.add(PReLU())
-model.add(Dropout(0.5))
+model.add(Dropout(mlp_dropout))
 model.add(BatchNormalization())
 
 model.add(Dense(3, activation="sigmoid"))

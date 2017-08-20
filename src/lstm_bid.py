@@ -62,8 +62,9 @@ model_name = os.path.join(model_dir, exp_stamp + ".model.json")
 model_weights_name = os.path.join(model_dir, exp_stamp + ".weight.h5")
 model_metrics_name = os.path.join(model_dir, exp_stamp + ".metrics.json")
 
-if not os.path.isdir(tensorboard_log_dir):
-    os.mkdir(tensorboard_log_dir)
+tf_log_dir = os.path.join(tensorboard_log_dir, exp_stamp)
+if not os.path.isdir(tf_log_dir):
+    os.mkdir(tf_log_dir)
 
 # =====data preprocess=====
 X_train, y_train, X_dev, y_dev, X_test, y_test, tokenizer = load_data(train_sampling=arg.train_sampling)
@@ -126,7 +127,7 @@ model.compile(loss="categorical_crossentropy",
               metrics=["accuracy"]
               )
 
-tensorboard = TensorBoard(log_dir=tensorboard_log_dir)
+tensorboard = TensorBoard(log_dir=tf_log_dir)
 history = model.fit(X_train, y_train,
                     batch_size=batch_size,
                     epochs=nb_epochs,

@@ -17,8 +17,7 @@ from keras.layers import Merge
 from keras.utils import np_utils
 from keras import backend as K
 
-from keras.callbacks import TensorBoard
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
 
 from gensim.models import KeyedVectors
 
@@ -36,13 +35,15 @@ parser.add_argument("--nb_epochs", type=int, default=10, help="numbers of epochs
 parser.add_argument("--lstm_dim", type=int, default=200, help="LSTM dim.")
 parser.add_argument("--embedding_dim", type=int, default=200, help="embedding dim.")
 parser.add_argument("--model_dir", default="model/", help="path to model")
-opt = parser.parse_args()
-print("Arguments: ", opt)
+parser.add_argument("--tensorboard_dir", default="log/", help="path to save tensorboard logs")
+arg = parser.parse_args()
+print("Arguments: ", arg)
 
-batch_size = opt.batch_size
-nb_epochs = opt.nb_epochs
-lstm_dim = opt.lstm_dim
-embedding_dim = opt.embedding_dim
+batch_size = arg.batch_size
+nb_epochs = arg.nb_epochs
+lstm_dim = arg.lstm_dim
+embedding_dim = arg.embedding_dim
+tensorboard_log_dir = arg.tensorboard_dir
 
 dt_str = datetime.now().strftime("%Y%m%d")
 ut_str = datetime.now().strftime("%s")
@@ -54,22 +55,24 @@ exp_stamp = "{}.{}.{}_{}_{}_{}".format(ut_str,
                                        lstm_dim,
                                        embedding_dim)
 
-model_dir = os.path.join(opt.model_dir, dt_str)
+model_dir = os.path.join(arg.model_dir, dt_str)
 if not os.path.isdir(model_dir):
-    print(model_dir)
     os.mkdir(model_dir)
 model_name = os.path.join(model_dir, exp_stamp + ".model.json")
 model_weights_name = os.path.join(model_dir, exp_stamp + ".weight.h5")
 model_metrics_name = os.path.join(model_dir, exp_stamp + ".metrics.json")
 
+if not os.path.isdir(tensorboard_log_dir):
+    os.mkdir(tensorboard_log_dir)
+
 # =====data preprocess=====
-X_train, y_train, X_dev, y_dev, X_test, y_test, tokenizer = load_data(train_sampling=opt.train_sampling)
+X_train, y_train, X_dev, y_dev, X_test, y_test, tokenizer = load_data(train_sampling=arg.train_sampling)
 
 # =====preapare embedding matrix=====
 word_index = tokenizer.word_index
 num_words = len(word_index)
 
-embeddings_index = load_embedding_index(opt.embedding_dir, opt.embedding_file)
+embeddings_index = load_embedding_index(arg.embedding_dir, arg.embedding_file)
 
 embedding_matrix = np.zeros((len(word_index) + 1, 200))
 for word, i in word_index.items():
@@ -123,13 +126,14 @@ model.compile(loss="categorical_crossentropy",
               metrics=["accuracy"]
               )
 
-
-model.fit(X_train, y_train,
-          batch_size=batch_size,
-          epochs=nb_epochs,
-          validation_data=(X_dev, y_dev),
-          shuffle=True,
-          )
+tensorboard = TensorBoard(log_dir=tensorboard_log_dir)
+history = model.fit(X_train, y_train,
+                    batch_size=batch_size,
+                    epochs=nb_epochs,
+                    validation_data=(X_dev, y_dev),
+                    shuffle=True,
+                    callbacks=[tensorboard]
+                    )
 
 score, acc = model.evaluate(X_test, y_test, batch_size=batch_size)
 
@@ -146,6 +150,6 @@ with open(model_metrics_name, "w") as f:
     json.dump(
         {
             "evaluation": {"test_score": score, "test_accuracy": acc},
-            "parameter": vars(opt)
+            "parameter": vars(arg)
         },
         f)

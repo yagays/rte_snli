@@ -27,7 +27,7 @@ np.random.seed(6162)
 
 # =====arguments=====
 parser = argparse.ArgumentParser()
-parser.add_argument("--train_sampling", action="store_true", help="run sampled train data")
+parser.add_argument("--train_sampling", default=False, action="store_true", help="run sampled train data")
 parser.add_argument("--embedding_dir", default="", help="path to GloVe embedding matrix")
 parser.add_argument("--embedding_file", default="", help="GloVe file name")
 parser.add_argument("--batch_size", type=int, default=512, help="batch size")

@@ -11,6 +11,7 @@
 | lstm_td.py | merge(200D LSTMs + 100D TimeDistributed) + MLP(300U*3L) | 81.6 |
 | lstm_bid.py | merge(200D BiDirectional LSTMs + 100D TimeDistributed) + MLP(200U*3L) | 82.1 |
 | lstm_bid.py | merge(200D BiDirectional LSTMs + 200D TimeDistributed) + MLP(400U*3L) | 83.0 |
+| lstm_bid.py | merge(200D BiDirectional LSTMs + 300D TimeDistributed) + MLP(600U*3L) | 83.7 |
 
 D: Dimension, U: Unit, L: Layer
 
